@@ -1,0 +1,807 @@
+<mujoco model="icosabot">
+  <compiler angle="degree" autolimits="true" inertiafromgeom="auto"/>
+  <option timestep="0.002" integrator="implicitfast" gravity="0 0 -9.81"/>
+
+  <default>
+    <geom friction="1.0 0.005 0.0001"/>
+    <default class="hub"><geom type="mesh" contype="4" conaffinity="4" rgba="0.85 0.85 0.9 1" density="1000"/></default>
+    <default class="rod"><geom contype="2" conaffinity="2" rgba="0.95 0.45 0.15 1"/></default>
+    <default class="padvis"><geom type="mesh" contype="0" conaffinity="0" group="2" rgba="0.3 0.6 1 0.8" density="0"/></default>
+    <default class="taxel">
+      <geom type="box" contype="1" conaffinity="1" rgba="0.2 0.85 0.5 1" density="500"/>
+      <site type="box" rgba="1 0 0 0.15" group="3"/>
+    </default>
+  </default>
+
+  <asset>
+    <mesh name="hub_mesh" vertex="0.0124721 0 0 0.0038541 0.0118617 0 -0.0100902 0.00733094 0 -0.0100902 -0.00733094 0 0.0038541 -0.0118617 0 0.006 0 0.004 0.0018541 0.00570634 0.004 -0.0048541 0.00352671 0.004 -0.0048541 -0.00352671 0.004 0.0018541 -0.00570634 0.004"/>
+    <mesh name="pad_mesh" vertex="0.0324905 0 -0.0003 -0.0162452 0.0281376 -0.0003 -0.0162452 -0.0281376 -0.0003 0.0324905 0 -0.002 -0.0162452 0.0281376 -0.002 -0.0162452 -0.0281376 -0.002"/>
+  </asset>
+
+  <worldbody>
+    <light pos="0 0 1" dir="0 0 -1"/>
+    <!-- contype/conaffinity 7 = collides with pads(1), rods(2), hubs(4) -->
+    <geom name="floor" type="plane" size="2 2 0.1" contype="7" conaffinity="7" rgba="0.25 0.25 0.3 1"/>
+    <body name="core" pos="0 0 0.12">
+      <freejoint name="root"/>
+      <geom name="core_geom" type="sphere" size="0.025" mass="0.2" contype="0" conaffinity="0" rgba="0.2 0.2 0.2 1"/>
+      <site name="imu" size="0.003"/>
+      <body name="hub00" pos="0 -0.0359476 -0.0581644" xyaxes="-0.587785 -0.688191 0.425325 -0.809017 0.5 -0.309017">
+        <geom class="hub" mesh="hub_mesh" name="hub00_geom"/>
+        <body name="rod00">
+          <joint name="slide00" type="slide" axis="0 0 1" range="0 0.025" limited="true" damping="0.5"/>
+          <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.01"/>
+          <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
+        </body>
+      </body>
+      <body name="hub01" pos="-0.0359476 -0.0581644 0" xyaxes="0.262866 -0.16246 -0.951057 0.809017 -0.5 0.309017">
+        <geom class="hub" mesh="hub_mesh" name="hub01_geom"/>
+        <body name="rod01">
+          <joint name="slide01" type="slide" axis="0 0 1" range="0 0.025" limited="true" damping="0.5"/>
+          <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.01"/>
+          <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
+        </body>
+      </body>
+      <body name="hub02" pos="-0.0581644 0 -0.0359476" xyaxes="0.425325 -0.587785 -0.688191 -0.309017 -0.809017 0.5">
+        <geom class="hub" mesh="hub_mesh" name="hub02_geom"/>
+        <body name="rod02">
+          <joint name="slide02" type="slide" axis="0 0 1" range="0 0.025" limited="true" damping="0.5"/>
+          <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.01"/>
+          <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
+        </body>
+      </body>
+      <body name="hub03" pos="0 -0.0359476 0.0581644" xyaxes="-0.587785 -0.688191 -0.425325 0.809017 -0.5 -0.309017">
+        <geom class="hub" mesh="hub_mesh" name="hub03_geom"/>
+        <body name="rod03">
+          <joint name="slide03" type="slide" axis="0 0 1" range="0 0.025" limited="true" damping="0.5"/>
+          <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.01"/>
+          <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
+        </body>
+      </body>
+      <body name="hub04" pos="-0.0359476 0.0581644 0" xyaxes="-0.688191 -0.425325 -0.587785 -0.5 -0.309017 0.809017">
+        <geom class="hub" mesh="hub_mesh" name="hub04_geom"/>
+        <body name="rod04">
+          <joint name="slide04" type="slide" axis="0 0 1" range="0 0.025" limited="true" damping="0.5"/>
+          <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.01"/>
+          <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
+        </body>
+      </body>
+      <body name="hub05" pos="0.0581644 0 -0.0359476" xyaxes="-0.425325 -0.587785 -0.688191 -0.309017 0.809017 -0.5">
+        <geom class="hub" mesh="hub_mesh" name="hub05_geom"/>
+        <body name="rod05">
+          <joint name="slide05" type="slide" axis="0 0 1" range="0 0.025" limited="true" damping="0.5"/>
+          <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.01"/>
+          <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
+        </body>
+      </body>
+      <body name="hub06" pos="0 0.0359476 -0.0581644" xyaxes="0 -0.850651 -0.525731 -1 0 -0">
+        <geom class="hub" mesh="hub_mesh" name="hub06_geom"/>
+        <body name="rod06">
+          <joint name="slide06" type="slide" axis="0 0 1" range="0 0.025" limited="true" damping="0.5"/>
+          <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.01"/>
+          <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
+        </body>
+      </body>
+      <body name="hub07" pos="0.0359476 -0.0581644 0" xyaxes="-0.262866 -0.16246 -0.951057 0.809017 0.5 -0.309017">
+        <geom class="hub" mesh="hub_mesh" name="hub07_geom"/>
+        <body name="rod07">
+          <joint name="slide07" type="slide" axis="0 0 1" range="0 0.025" limited="true" damping="0.5"/>
+          <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.01"/>
+          <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
+        </body>
+      </body>
+      <body name="hub08" pos="-0.0581644 0 0.0359476" xyaxes="-0.16246 -0.951057 -0.262866 0.5 -0.309017 0.809017">
+        <geom class="hub" mesh="hub_mesh" name="hub08_geom"/>
+        <body name="rod08">
+          <joint name="slide08" type="slide" axis="0 0 1" range="0 0.025" limited="true" damping="0.5"/>
+          <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.01"/>
+          <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
+        </body>
+      </body>
+      <body name="hub09" pos="0 0.0359476 0.0581644" xyaxes="0 -0.850651 0.525731 1 0 -0">
+        <geom class="hub" mesh="hub_mesh" name="hub09_geom"/>
+        <body name="rod09">
+          <joint name="slide09" type="slide" axis="0 0 1" range="0 0.025" limited="true" damping="0.5"/>
+          <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.01"/>
+          <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
+        </body>
+      </body>
+      <body name="hub10" pos="0.0359476 0.0581644 0" xyaxes="-0.850651 0.525731 0 0 -0 1">
+        <geom class="hub" mesh="hub_mesh" name="hub10_geom"/>
+        <body name="rod10">
+          <joint name="slide10" type="slide" axis="0 0 1" range="0 0.025" limited="true" damping="0.5"/>
+          <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.01"/>
+          <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
+        </body>
+      </body>
+      <body name="hub11" pos="0.0581644 0 0.0359476" xyaxes="-0.425325 -0.587785 0.688191 0.309017 -0.809017 -0.5">
+        <geom class="hub" mesh="hub_mesh" name="hub11_geom"/>
+        <body name="rod11">
+          <joint name="slide11" type="slide" axis="0 0 1" range="0 0.025" limited="true" damping="0.5"/>
+          <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.01"/>
+          <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
+        </body>
+      </body>
+      <body name="pad00" pos="-0.0349071 -0.0349071 -0.0349071" xyaxes="0.755761 -0.110264 -0.645497 0.309017 -0.809017 0.5">
+        <geom class="taxel" name="pad00_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad00_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad00_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad00_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad00_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad00_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad00_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad00_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad00_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad00_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad00_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad00_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad00_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad00_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad00_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad00_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad00_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad00_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad00_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad00_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad01" pos="0 -0.0564809 -0.0215738" xyaxes="0 0.356822 -0.934172 1 0 0">
+        <geom class="taxel" name="pad01_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad01_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad01_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad01_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad01_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad01_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad01_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad01_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad01_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad01_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad01_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad01_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad01_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad01_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad01_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad01_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad01_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad01_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad01_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad01_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad02" pos="-0.0215738 0 -0.0564809" xyaxes="0.467086 -0.866025 -0.178411 -0.809017 -0.5 0.309017">
+        <geom class="taxel" name="pad02_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad02_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad02_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad02_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad02_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad02_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad02_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad02_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad02_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad02_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad02_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad02_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad02_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad02_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad02_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad02_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad02_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad02_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad02_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad02_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad03" pos="0.0215738 0 -0.0564809" xyaxes="-0.467086 -0.866025 -0.178411 -0.809017 0.5 -0.309017">
+        <geom class="taxel" name="pad03_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad03_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad03_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad03_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad03_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad03_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad03_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad03_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad03_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad03_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad03_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad03_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad03_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad03_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad03_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad03_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad03_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad03_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad03_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad03_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad04" pos="0.0349071 -0.0349071 -0.0349071" xyaxes="-0.755761 -0.110264 -0.645497 0.309017 0.809017 -0.5">
+        <geom class="taxel" name="pad04_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad04_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad04_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad04_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad04_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad04_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad04_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad04_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad04_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad04_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad04_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad04_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad04_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad04_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad04_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad04_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad04_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad04_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad04_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad04_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad05" pos="-0.0564809 -0.0215738 0" xyaxes="0.356822 -0.934172 0 0 0 1">
+        <geom class="taxel" name="pad05_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad05_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad05_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad05_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad05_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad05_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad05_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad05_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad05_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad05_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad05_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad05_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad05_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad05_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad05_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad05_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad05_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad05_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad05_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad05_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad06" pos="0 -0.0564809 0.0215738" xyaxes="-0.866025 -0.178411 -0.467086 0.5 -0.309017 -0.809017">
+        <geom class="taxel" name="pad06_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad06_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad06_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad06_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad06_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad06_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad06_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad06_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad06_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad06_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad06_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad06_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad06_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad06_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad06_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad06_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad06_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad06_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad06_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad06_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad07" pos="-0.0349071 -0.0349071 0.0349071" xyaxes="-0.110264 -0.645497 -0.755761 0.809017 -0.5 0.309017">
+        <geom class="taxel" name="pad07_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad07_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad07_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad07_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad07_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad07_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad07_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad07_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad07_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad07_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad07_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad07_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad07_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad07_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad07_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad07_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad07_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad07_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad07_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad07_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad08" pos="-0.0349071 0.0349071 -0.0349071" xyaxes="-0.645497 -0.755761 -0.110264 -0.5 0.309017 0.809017">
+        <geom class="taxel" name="pad08_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad08_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad08_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad08_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad08_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad08_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad08_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad08_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad08_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad08_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad08_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad08_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad08_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad08_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad08_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad08_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad08_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad08_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad08_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad08_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad09" pos="-0.0564809 0.0215738 0" xyaxes="-0.178411 -0.467086 -0.866025 -0.309017 -0.809017 0.5">
+        <geom class="taxel" name="pad09_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad09_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad09_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad09_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad09_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad09_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad09_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad09_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad09_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad09_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad09_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad09_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad09_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad09_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad09_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad09_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad09_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad09_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad09_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad09_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad10" pos="0.0349071 -0.0349071 0.0349071" xyaxes="-0.755761 -0.110264 0.645497 -0.309017 -0.809017 -0.5">
+        <geom class="taxel" name="pad10_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad10_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad10_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad10_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad10_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad10_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad10_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad10_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad10_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad10_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad10_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad10_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad10_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad10_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad10_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad10_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad10_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad10_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad10_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad10_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad11" pos="-0.0215738 0 0.0564809" xyaxes="0.467086 -0.866025 0.178411 0.809017 0.5 0.309017">
+        <geom class="taxel" name="pad11_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad11_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad11_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad11_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad11_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad11_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad11_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad11_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad11_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad11_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad11_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad11_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad11_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad11_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad11_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad11_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad11_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad11_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad11_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad11_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad12" pos="0.0215738 0 0.0564809" xyaxes="-0.467086 -0.866025 0.178411 0.809017 -0.5 -0.309017">
+        <geom class="taxel" name="pad12_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad12_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad12_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad12_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad12_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad12_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad12_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad12_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad12_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad12_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad12_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad12_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad12_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad12_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad12_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad12_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad12_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad12_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad12_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad12_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad13" pos="0 0.0564809 -0.0215738" xyaxes="-0.866025 0.178411 0.467086 0.5 0.309017 0.809017">
+        <geom class="taxel" name="pad13_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad13_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad13_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad13_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad13_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad13_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad13_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad13_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad13_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad13_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad13_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad13_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad13_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad13_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad13_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad13_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad13_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad13_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad13_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad13_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad14" pos="-0.0349071 0.0349071 0.0349071" xyaxes="-0.110264 0.645497 -0.755761 -0.809017 -0.5 -0.309017">
+        <geom class="taxel" name="pad14_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad14_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad14_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad14_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad14_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad14_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad14_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad14_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad14_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad14_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad14_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad14_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad14_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad14_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad14_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad14_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad14_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad14_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad14_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad14_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad15" pos="0 0.0564809 0.0215738" xyaxes="-0.866025 0.178411 -0.467086 -0.5 -0.309017 0.809017">
+        <geom class="taxel" name="pad15_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad15_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad15_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad15_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad15_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad15_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad15_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad15_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad15_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad15_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad15_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad15_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad15_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad15_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad15_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad15_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad15_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad15_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad15_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad15_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad16" pos="0.0349071 0.0349071 -0.0349071" xyaxes="0.645497 -0.755761 -0.110264 -0.5 -0.309017 -0.809017">
+        <geom class="taxel" name="pad16_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad16_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad16_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad16_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad16_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad16_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad16_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad16_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad16_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad16_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad16_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad16_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad16_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad16_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad16_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad16_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad16_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad16_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad16_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad16_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad17" pos="0.0564809 -0.0215738 0" xyaxes="0.178411 0.467086 -0.866025 0.309017 0.809017 0.5">
+        <geom class="taxel" name="pad17_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad17_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad17_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad17_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad17_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad17_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad17_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad17_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad17_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad17_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad17_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad17_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad17_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad17_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad17_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad17_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad17_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad17_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad17_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad17_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad18" pos="0.0564809 0.0215738 0" xyaxes="0.178411 -0.467086 -0.866025 -0.309017 0.809017 -0.5">
+        <geom class="taxel" name="pad18_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad18_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad18_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad18_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad18_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad18_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad18_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad18_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad18_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad18_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad18_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad18_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad18_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad18_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad18_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad18_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad18_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad18_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad18_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad18_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+      <body name="pad19" pos="0.0349071 0.0349071 0.0349071" xyaxes="-0.755761 0.110264 0.645497 0.309017 -0.809017 0.5">
+        <geom class="taxel" name="pad19_t00_g" pos="-0.0121839 -0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad19_t00" pos="-0.0121839 -0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad19_t01_g" pos="-0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad19_t01" pos="-0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad19_t02_g" pos="-0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad19_t02" pos="-0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad19_t03_g" pos="-0.0121839 0.0211032 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad19_t03" pos="-0.0121839 0.0211032 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad19_t04_g" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad19_t04" pos="-8.21565e-18 -0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad19_t05_g" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad19_t05" pos="-1.77636e-18 5.32907e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad19_t06_g" pos="2.44249e-18 0.0140688 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad19_t06" pos="2.44249e-18 0.0140688 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad19_t07_g" pos="0.0121839 -0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad19_t07" pos="0.0121839 -0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad19_t08_g" pos="0.0121839 0.00703439 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad19_t08" pos="0.0121839 0.00703439 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="taxel" name="pad19_t09_g" pos="0.0243678 1.33227e-18 -0.001" size="0.00243678 0.00243678 0.001"/>
+        <site class="taxel" name="pad19_t09" pos="0.0243678 1.33227e-18 -0.001" size="0.00293678 0.00293678 0.0015"/>
+        <geom class="padvis" mesh="pad_mesh"/>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <position name="act00" joint="slide00" kp="2000" kv="3" ctrlrange="0 0.025" ctrllimited="true"/>
+    <position name="act01" joint="slide01" kp="2000" kv="3" ctrlrange="0 0.025" ctrllimited="true"/>
+    <position name="act02" joint="slide02" kp="2000" kv="3" ctrlrange="0 0.025" ctrllimited="true"/>
+    <position name="act03" joint="slide03" kp="2000" kv="3" ctrlrange="0 0.025" ctrllimited="true"/>
+    <position name="act04" joint="slide04" kp="2000" kv="3" ctrlrange="0 0.025" ctrllimited="true"/>
+    <position name="act05" joint="slide05" kp="2000" kv="3" ctrlrange="0 0.025" ctrllimited="true"/>
+    <position name="act06" joint="slide06" kp="2000" kv="3" ctrlrange="0 0.025" ctrllimited="true"/>
+    <position name="act07" joint="slide07" kp="2000" kv="3" ctrlrange="0 0.025" ctrllimited="true"/>
+    <position name="act08" joint="slide08" kp="2000" kv="3" ctrlrange="0 0.025" ctrllimited="true"/>
+    <position name="act09" joint="slide09" kp="2000" kv="3" ctrlrange="0 0.025" ctrllimited="true"/>
+    <position name="act10" joint="slide10" kp="2000" kv="3" ctrlrange="0 0.025" ctrllimited="true"/>
+    <position name="act11" joint="slide11" kp="2000" kv="3" ctrlrange="0 0.025" ctrllimited="true"/>
+  </actuator>
+
+  <sensor>
+    <accelerometer name="imu_acc" site="imu"/>
+    <gyro name="imu_gyro" site="imu"/>
+    <touch name="pad00_t00_touch" site="pad00_t00"/>
+    <touch name="pad00_t01_touch" site="pad00_t01"/>
+    <touch name="pad00_t02_touch" site="pad00_t02"/>
+    <touch name="pad00_t03_touch" site="pad00_t03"/>
+    <touch name="pad00_t04_touch" site="pad00_t04"/>
+    <touch name="pad00_t05_touch" site="pad00_t05"/>
+    <touch name="pad00_t06_touch" site="pad00_t06"/>
+    <touch name="pad00_t07_touch" site="pad00_t07"/>
+    <touch name="pad00_t08_touch" site="pad00_t08"/>
+    <touch name="pad00_t09_touch" site="pad00_t09"/>
+    <touch name="pad01_t00_touch" site="pad01_t00"/>
+    <touch name="pad01_t01_touch" site="pad01_t01"/>
+    <touch name="pad01_t02_touch" site="pad01_t02"/>
+    <touch name="pad01_t03_touch" site="pad01_t03"/>
+    <touch name="pad01_t04_touch" site="pad01_t04"/>
+    <touch name="pad01_t05_touch" site="pad01_t05"/>
+    <touch name="pad01_t06_touch" site="pad01_t06"/>
+    <touch name="pad01_t07_touch" site="pad01_t07"/>
+    <touch name="pad01_t08_touch" site="pad01_t08"/>
+    <touch name="pad01_t09_touch" site="pad01_t09"/>
+    <touch name="pad02_t00_touch" site="pad02_t00"/>
+    <touch name="pad02_t01_touch" site="pad02_t01"/>
+    <touch name="pad02_t02_touch" site="pad02_t02"/>
+    <touch name="pad02_t03_touch" site="pad02_t03"/>
+    <touch name="pad02_t04_touch" site="pad02_t04"/>
+    <touch name="pad02_t05_touch" site="pad02_t05"/>
+    <touch name="pad02_t06_touch" site="pad02_t06"/>
+    <touch name="pad02_t07_touch" site="pad02_t07"/>
+    <touch name="pad02_t08_touch" site="pad02_t08"/>
+    <touch name="pad02_t09_touch" site="pad02_t09"/>
+    <touch name="pad03_t00_touch" site="pad03_t00"/>
+    <touch name="pad03_t01_touch" site="pad03_t01"/>
+    <touch name="pad03_t02_touch" site="pad03_t02"/>
+    <touch name="pad03_t03_touch" site="pad03_t03"/>
+    <touch name="pad03_t04_touch" site="pad03_t04"/>
+    <touch name="pad03_t05_touch" site="pad03_t05"/>
+    <touch name="pad03_t06_touch" site="pad03_t06"/>
+    <touch name="pad03_t07_touch" site="pad03_t07"/>
+    <touch name="pad03_t08_touch" site="pad03_t08"/>
+    <touch name="pad03_t09_touch" site="pad03_t09"/>
+    <touch name="pad04_t00_touch" site="pad04_t00"/>
+    <touch name="pad04_t01_touch" site="pad04_t01"/>
+    <touch name="pad04_t02_touch" site="pad04_t02"/>
+    <touch name="pad04_t03_touch" site="pad04_t03"/>
+    <touch name="pad04_t04_touch" site="pad04_t04"/>
+    <touch name="pad04_t05_touch" site="pad04_t05"/>
+    <touch name="pad04_t06_touch" site="pad04_t06"/>
+    <touch name="pad04_t07_touch" site="pad04_t07"/>
+    <touch name="pad04_t08_touch" site="pad04_t08"/>
+    <touch name="pad04_t09_touch" site="pad04_t09"/>
+    <touch name="pad05_t00_touch" site="pad05_t00"/>
+    <touch name="pad05_t01_touch" site="pad05_t01"/>
+    <touch name="pad05_t02_touch" site="pad05_t02"/>
+    <touch name="pad05_t03_touch" site="pad05_t03"/>
+    <touch name="pad05_t04_touch" site="pad05_t04"/>
+    <touch name="pad05_t05_touch" site="pad05_t05"/>
+    <touch name="pad05_t06_touch" site="pad05_t06"/>
+    <touch name="pad05_t07_touch" site="pad05_t07"/>
+    <touch name="pad05_t08_touch" site="pad05_t08"/>
+    <touch name="pad05_t09_touch" site="pad05_t09"/>
+    <touch name="pad06_t00_touch" site="pad06_t00"/>
+    <touch name="pad06_t01_touch" site="pad06_t01"/>
+    <touch name="pad06_t02_touch" site="pad06_t02"/>
+    <touch name="pad06_t03_touch" site="pad06_t03"/>
+    <touch name="pad06_t04_touch" site="pad06_t04"/>
+    <touch name="pad06_t05_touch" site="pad06_t05"/>
+    <touch name="pad06_t06_touch" site="pad06_t06"/>
+    <touch name="pad06_t07_touch" site="pad06_t07"/>
+    <touch name="pad06_t08_touch" site="pad06_t08"/>
+    <touch name="pad06_t09_touch" site="pad06_t09"/>
+    <touch name="pad07_t00_touch" site="pad07_t00"/>
+    <touch name="pad07_t01_touch" site="pad07_t01"/>
+    <touch name="pad07_t02_touch" site="pad07_t02"/>
+    <touch name="pad07_t03_touch" site="pad07_t03"/>
+    <touch name="pad07_t04_touch" site="pad07_t04"/>
+    <touch name="pad07_t05_touch" site="pad07_t05"/>
+    <touch name="pad07_t06_touch" site="pad07_t06"/>
+    <touch name="pad07_t07_touch" site="pad07_t07"/>
+    <touch name="pad07_t08_touch" site="pad07_t08"/>
+    <touch name="pad07_t09_touch" site="pad07_t09"/>
+    <touch name="pad08_t00_touch" site="pad08_t00"/>
+    <touch name="pad08_t01_touch" site="pad08_t01"/>
+    <touch name="pad08_t02_touch" site="pad08_t02"/>
+    <touch name="pad08_t03_touch" site="pad08_t03"/>
+    <touch name="pad08_t04_touch" site="pad08_t04"/>
+    <touch name="pad08_t05_touch" site="pad08_t05"/>
+    <touch name="pad08_t06_touch" site="pad08_t06"/>
+    <touch name="pad08_t07_touch" site="pad08_t07"/>
+    <touch name="pad08_t08_touch" site="pad08_t08"/>
+    <touch name="pad08_t09_touch" site="pad08_t09"/>
+    <touch name="pad09_t00_touch" site="pad09_t00"/>
+    <touch name="pad09_t01_touch" site="pad09_t01"/>
+    <touch name="pad09_t02_touch" site="pad09_t02"/>
+    <touch name="pad09_t03_touch" site="pad09_t03"/>
+    <touch name="pad09_t04_touch" site="pad09_t04"/>
+    <touch name="pad09_t05_touch" site="pad09_t05"/>
+    <touch name="pad09_t06_touch" site="pad09_t06"/>
+    <touch name="pad09_t07_touch" site="pad09_t07"/>
+    <touch name="pad09_t08_touch" site="pad09_t08"/>
+    <touch name="pad09_t09_touch" site="pad09_t09"/>
+    <touch name="pad10_t00_touch" site="pad10_t00"/>
+    <touch name="pad10_t01_touch" site="pad10_t01"/>
+    <touch name="pad10_t02_touch" site="pad10_t02"/>
+    <touch name="pad10_t03_touch" site="pad10_t03"/>
+    <touch name="pad10_t04_touch" site="pad10_t04"/>
+    <touch name="pad10_t05_touch" site="pad10_t05"/>
+    <touch name="pad10_t06_touch" site="pad10_t06"/>
+    <touch name="pad10_t07_touch" site="pad10_t07"/>
+    <touch name="pad10_t08_touch" site="pad10_t08"/>
+    <touch name="pad10_t09_touch" site="pad10_t09"/>
+    <touch name="pad11_t00_touch" site="pad11_t00"/>
+    <touch name="pad11_t01_touch" site="pad11_t01"/>
+    <touch name="pad11_t02_touch" site="pad11_t02"/>
+    <touch name="pad11_t03_touch" site="pad11_t03"/>
+    <touch name="pad11_t04_touch" site="pad11_t04"/>
+    <touch name="pad11_t05_touch" site="pad11_t05"/>
+    <touch name="pad11_t06_touch" site="pad11_t06"/>
+    <touch name="pad11_t07_touch" site="pad11_t07"/>
+    <touch name="pad11_t08_touch" site="pad11_t08"/>
+    <touch name="pad11_t09_touch" site="pad11_t09"/>
+    <touch name="pad12_t00_touch" site="pad12_t00"/>
+    <touch name="pad12_t01_touch" site="pad12_t01"/>
+    <touch name="pad12_t02_touch" site="pad12_t02"/>
+    <touch name="pad12_t03_touch" site="pad12_t03"/>
+    <touch name="pad12_t04_touch" site="pad12_t04"/>
+    <touch name="pad12_t05_touch" site="pad12_t05"/>
+    <touch name="pad12_t06_touch" site="pad12_t06"/>
+    <touch name="pad12_t07_touch" site="pad12_t07"/>
+    <touch name="pad12_t08_touch" site="pad12_t08"/>
+    <touch name="pad12_t09_touch" site="pad12_t09"/>
+    <touch name="pad13_t00_touch" site="pad13_t00"/>
+    <touch name="pad13_t01_touch" site="pad13_t01"/>
+    <touch name="pad13_t02_touch" site="pad13_t02"/>
+    <touch name="pad13_t03_touch" site="pad13_t03"/>
+    <touch name="pad13_t04_touch" site="pad13_t04"/>
+    <touch name="pad13_t05_touch" site="pad13_t05"/>
+    <touch name="pad13_t06_touch" site="pad13_t06"/>
+    <touch name="pad13_t07_touch" site="pad13_t07"/>
+    <touch name="pad13_t08_touch" site="pad13_t08"/>
+    <touch name="pad13_t09_touch" site="pad13_t09"/>
+    <touch name="pad14_t00_touch" site="pad14_t00"/>
+    <touch name="pad14_t01_touch" site="pad14_t01"/>
+    <touch name="pad14_t02_touch" site="pad14_t02"/>
+    <touch name="pad14_t03_touch" site="pad14_t03"/>
+    <touch name="pad14_t04_touch" site="pad14_t04"/>
+    <touch name="pad14_t05_touch" site="pad14_t05"/>
+    <touch name="pad14_t06_touch" site="pad14_t06"/>
+    <touch name="pad14_t07_touch" site="pad14_t07"/>
+    <touch name="pad14_t08_touch" site="pad14_t08"/>
+    <touch name="pad14_t09_touch" site="pad14_t09"/>
+    <touch name="pad15_t00_touch" site="pad15_t00"/>
+    <touch name="pad15_t01_touch" site="pad15_t01"/>
+    <touch name="pad15_t02_touch" site="pad15_t02"/>
+    <touch name="pad15_t03_touch" site="pad15_t03"/>
+    <touch name="pad15_t04_touch" site="pad15_t04"/>
+    <touch name="pad15_t05_touch" site="pad15_t05"/>
+    <touch name="pad15_t06_touch" site="pad15_t06"/>
+    <touch name="pad15_t07_touch" site="pad15_t07"/>
+    <touch name="pad15_t08_touch" site="pad15_t08"/>
+    <touch name="pad15_t09_touch" site="pad15_t09"/>
+    <touch name="pad16_t00_touch" site="pad16_t00"/>
+    <touch name="pad16_t01_touch" site="pad16_t01"/>
+    <touch name="pad16_t02_touch" site="pad16_t02"/>
+    <touch name="pad16_t03_touch" site="pad16_t03"/>
+    <touch name="pad16_t04_touch" site="pad16_t04"/>
+    <touch name="pad16_t05_touch" site="pad16_t05"/>
+    <touch name="pad16_t06_touch" site="pad16_t06"/>
+    <touch name="pad16_t07_touch" site="pad16_t07"/>
+    <touch name="pad16_t08_touch" site="pad16_t08"/>
+    <touch name="pad16_t09_touch" site="pad16_t09"/>
+    <touch name="pad17_t00_touch" site="pad17_t00"/>
+    <touch name="pad17_t01_touch" site="pad17_t01"/>
+    <touch name="pad17_t02_touch" site="pad17_t02"/>
+    <touch name="pad17_t03_touch" site="pad17_t03"/>
+    <touch name="pad17_t04_touch" site="pad17_t04"/>
+    <touch name="pad17_t05_touch" site="pad17_t05"/>
+    <touch name="pad17_t06_touch" site="pad17_t06"/>
+    <touch name="pad17_t07_touch" site="pad17_t07"/>
+    <touch name="pad17_t08_touch" site="pad17_t08"/>
+    <touch name="pad17_t09_touch" site="pad17_t09"/>
+    <touch name="pad18_t00_touch" site="pad18_t00"/>
+    <touch name="pad18_t01_touch" site="pad18_t01"/>
+    <touch name="pad18_t02_touch" site="pad18_t02"/>
+    <touch name="pad18_t03_touch" site="pad18_t03"/>
+    <touch name="pad18_t04_touch" site="pad18_t04"/>
+    <touch name="pad18_t05_touch" site="pad18_t05"/>
+    <touch name="pad18_t06_touch" site="pad18_t06"/>
+    <touch name="pad18_t07_touch" site="pad18_t07"/>
+    <touch name="pad18_t08_touch" site="pad18_t08"/>
+    <touch name="pad18_t09_touch" site="pad18_t09"/>
+    <touch name="pad19_t00_touch" site="pad19_t00"/>
+    <touch name="pad19_t01_touch" site="pad19_t01"/>
+    <touch name="pad19_t02_touch" site="pad19_t02"/>
+    <touch name="pad19_t03_touch" site="pad19_t03"/>
+    <touch name="pad19_t04_touch" site="pad19_t04"/>
+    <touch name="pad19_t05_touch" site="pad19_t05"/>
+    <touch name="pad19_t06_touch" site="pad19_t06"/>
+    <touch name="pad19_t07_touch" site="pad19_t07"/>
+    <touch name="pad19_t08_touch" site="pad19_t08"/>
+    <touch name="pad19_t09_touch" site="pad19_t09"/>
+  </sensor>
+</mujoco>
