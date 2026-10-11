@@ -32,7 +32,7 @@ class TactileUrchin(gym.Env):
                  trace_decay=0.9, render=False):
         super().__init__()
 
-        self.xml_path = files("tactip_urchin").joinpath(*xml_subpath)
+        self.xml_path = files("tactile_urchin").joinpath(*xml_subpath)
         self.model = mujoco.MjModel.from_xml_path(str(self.xml_path))
         self.data = mujoco.MjData(self.model)
 
