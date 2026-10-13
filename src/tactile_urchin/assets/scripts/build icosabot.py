@@ -1,49 +1,52 @@
 #!/usr/bin/env python3
 """
-Icosahedron "push-walker" -> MuJoCo MJCF generator.
+Icosahedron "push-walker" -> MuJoCo MJCF generator   (v2: pads are the OUTER SKIN)
 
-  12 vertex hubs  (your truncated pentagonal pyramid, STL or built-in)
-  12 linear actuators (slide joint through each hub's centre hole)
-  20 tactile pads (triangular faces, each with a grid of touch-sensor taxels)
+  20 tactile pads  = the outer shell, each with a grid of touch-sensor taxels
+  12 vertex hubs   = sit INSIDE the shell, hub sides rest against the pad undersides
+  12 linear actuators = slide through each hub; the foot pokes out of a hole in the
+                        shell where the 5 pad corners meet at every vertex
 
 Run:      python3 build_icosabot.py          -> writes icosabot.xml
 View:     python -m mujoco.viewer --mjcf=icosabot.xml
 
-MODULARITY: the three blueprint functions (hub_blueprint, rod_blueprint,
-pad_blueprint) are all you need to edit to redesign a part. The assembly code
-at the bottom only decides WHERE each blueprint is instanced.
+MODULARITY: hub_blueprint / rod_blueprint / pad_blueprint are the parts to redesign.
+The assembly code at the bottom only decides WHERE each blueprint is instanced.
 Units in this file: mm and degrees. Output XML is in metres (MuJoCo SI).
 """
 import math, os
 
 # ============================ PARAMETERS =====================================
-EDGE_LEN   = 80.0     # icosahedron edge length (vertex-to-vertex)  [mm]
+EDGE_LEN   = 80.0     # icosahedron edge length (outer skin, vertex-to-vertex)  [mm]
 
 # --- Hub: same names as your OpenSCAD file ---
-HUB_H           = 4.0     # total_height
-HUB_TOP_R       = 6.0     # top_radius (circumradius of top pentagon)
+HUB_H           = 4.0
+HUB_TOP_R       = 6.0
 HUB_SLANT       = None    # None = exact icosahedron value (31.72 deg). Your SCAD used 36.
-HUB_HOLE_D      = 4.0     # hole_small_d
-HUB_CBORE_D     = 8.0     # hole_wide_d
-HUB_CBORE_DEPTH = 2.0     # counterbore_depth
-HUB_STL         = "hub.stl"   # if this file sits next to icosabot.xml it is used (mm units)
+HUB_HOLE_D      = 4.0
+HUB_CBORE_D     = 8.0
+HUB_CBORE_DEPTH = 2.0
+HUB_STL         = "/home/dexter/Documents/GitHub/Tactile-Urchin-Robot/3D files/corner.stl"   # used if present next to icosabot.xml (mm units)
+HUB_CLEAR       = 0.1         # air gap between pad underside and hub sloped faces
 
 # --- Linear actuator (rod through hub) ---
-ROD_D     = 3.6     # shaft diameter (fits your 4 mm hole)
-ROD_LEN   = 22.0    # shaft length below hub bottom plane
-FOOT_R    = 3.5     # spherical foot radius (fits your 8 mm counterbore)
-STROKE    = 25.0    # travel
-ROD_MASS  = 0.010   # kg
-KP, KV    = 2000.0, 3.0   # position servo gains (N/m, N*s/m)
+ROD_D     = 3.6
+ROD_LEN   = 22.0
+FOOT_R    = 3.5
+STROKE    = 30.0     # NOTE: a 12 mm solenoid will really give ~2-5 mm. Change this.
+ROD_MASS  = 0.10
+KP, KV    = 5000.0, 0.5
 
-# --- Tactile pad ---
-PAD_T       = 2.0   # pad thickness
-PAD_GAP     = 1.0   # clearance between pad and hub shoulder
-TAXEL_N     = 4     # taxels per triangle side -> N(N+1)/2 taxels per pad (4 -> 10)
-TAXEL_FILL  = 0.6   # taxel size as fraction of its cell (<1 leaves gaps)
+# --- Tactile pad (outer skin) ---
+PAD_T          = 2.0   # skin thickness
+PAD_EDGE_GAP   = 1.0   # gap between neighbouring pads along each icosahedron edge
+OPEN_MARGIN    = 0.0   # extra vertex-opening size beyond the hub's top edge
+TAXEL_N        = 5     # taxels per triangle side (lattice N(N+1)/2, corner ones dropped)
+TAXEL_FILL     = 0.6   # taxel size as fraction of its cell
+TAXEL_EDGE_MARGIN = 0.5  # keep taxels this far from the vertex openings
 
 # --- Core (electronics / battery) ---
-CORE_R, CORE_MASS = 25.0, 0.20
+CORE_R, CORE_MASS = 25.0, 0.10
 
 OUT = "icosabot.xml"
 # ============================================================================
@@ -64,40 +67,66 @@ raw = []
 for s1 in (-1, 1):
     for s2 in (-1, 1):
         raw += [(0, s1, s2 * phi), (s1, s2 * phi, 0), (s2 * phi, 0, s1)]
-V = [mul(p, EDGE_LEN / 2) for p in raw]           # edge length = EDGE_LEN
-Rc = norm(V[0])                                   # circumradius
+V = [mul(p, EDGE_LEN / 2) for p in raw]
+Rc = norm(V[0])                                   # outer circumradius
 adj = lambda i, j: abs(norm(sub(V[i], V[j])) - EDGE_LEN) < 1e-6 * EDGE_LEN
 FACES = [(i, j, k) for i in range(12) for j in range(i+1, 12) for k in range(j+1, 12)
          if adj(i, j) and adj(j, k) and adj(i, k)]
 assert len(V) == 12 and len(FACES) == 20
+INR = norm(mul(add(add(V[FACES[0][0]], V[FACES[0][1]]), V[FACES[0][2]]), 1 / 3))  # face distance
+THETA = math.acos(INR / Rc)                       # vertex axis <-> face normal (37.38 deg)
 
-# ------------------------- derived hub geometry ------------------------------
+# ------------------------- hub geometry (inside the skin) --------------------
 if HUB_SLANT is None:
-    Rp = 1 / (2 * math.sin(math.radians(36)))     # pentagon circumradius, edge = 1
-    HUB_SLANT = math.degrees(math.atan2(math.sqrt(1 - Rp**2), Rp))   # = 31.72
+    Rp = 1 / (2 * math.sin(math.radians(36)))
+    HUB_SLANT = math.degrees(math.atan2(math.sqrt(1 - Rp**2), Rp))   # 31.72
 HUB_BOT_R = HUB_TOP_R + HUB_H / math.tan(math.radians(HUB_SLANT))
-HUB_DEPTH = HUB_BOT_R * math.tan(math.radians(HUB_SLANT))   # vertex tip -> hub bottom plane
-# in-face distance from the vertex to the hub's inner (bottom) pentagon side:
-CLIP_V = math.sqrt(HUB_DEPTH**2 + (HUB_BOT_R * math.cos(math.radians(36)))**2)
+HUB_DEPTH = HUB_BOT_R * math.tan(math.radians(HUB_SLANT))    # inner apex -> hub bottom plane
+# The hub's sloped faces must lie on planes PAD_T(+gap) BELOW the outer face planes,
+# i.e. on a slightly smaller icosahedron whose apex is at radius HUB_APEX_R.
+HUB_APEX_R = Rc * (INR - PAD_T - HUB_CLEAR) / INR
+DELTA = Rc - HUB_APEX_R                           # axial drop of hub apex below outer vertex
+
+# ------------------------- pad outline (full face minus vertex openings) -----
 FACE_R = EDGE_LEN / math.sqrt(3)                  # face circumradius
-PAD_R  = FACE_R - CLIP_V - PAD_GAP                # pad corner radius
+PAD_R  = FACE_R - PAD_EDGE_GAP                    # inset so neighbours leave a gap
+# in-face distance from the OUTER vertex to the hub's top edge, measured along the bisector:
+S_TOP = DELTA * math.sin(THETA) + math.hypot(HUB_DEPTH - HUB_H,
+                                             HUB_TOP_R * math.cos(math.radians(36)))
+L_CUT = S_TOP + OPEN_MARGIN                       # each pad corner is cut off at this distance
+CUT_H = FACE_R - L_CUT                            # cut line: p . u_k <= CUT_H
+U = [(math.cos(math.radians(a)), math.sin(math.radians(a))) for a in (0, 120, 240)]
+
+def _clip(poly, u, h):
+    out = []
+    for i in range(len(poly)):
+        p, q = poly[i], poly[(i + 1) % len(poly)]
+        dp = p[0]*u[0] + p[1]*u[1] - h
+        dq = q[0]*u[0] + q[1]*u[1] - h
+        if dp <= 0: out.append(p)
+        if dp * dq < 0:
+            t = dp / (dp - dq)
+            out.append((p[0] + t*(q[0]-p[0]), p[1] + t*(q[1]-p[1])))
+    return out
+
+TRI = [(PAD_R * u[0], PAD_R * u[1]) for u in U]
+PAD_POLY = TRI
+for u in U:
+    PAD_POLY = _clip(PAD_POLY, u, CUT_H)          # -> hexagon (triangle with 3 corners cut)
 
 
 # =============================== BLUEPRINTS ==================================
-# Edit these to redesign a part. Local frames are documented in each docstring.
-
 def hub_blueprint(vid):
-    """Local frame: origin = centre of hub BOTTOM plane, +Z points radially out,
-    pentagon corners at 0,72,144.. deg (same as OpenSCAD cylinder $fn=5).
-    Returns geom xml (collision/visual) for the hub body."""
+    """Local frame: origin = centre of hub BOTTOM plane, +Z radially out,
+    pentagon corners at 0,72,144.. deg. Hub is inside the skin, so no collision."""
     return f'<geom class="hub" mesh="hub_mesh" name="hub{vid:02d}_geom"/>'
 
 
 def rod_blueprint(vid):
-    """Local frame: same as hub. Returns the child <body> holding the actuator slide.
-    The rod slides along +Z through the hub's hole."""
+    """Local frame: same as hub. Slide joint along +Z through the hub's hole.
+    The foot retracts into the counterbore and extends out through the vertex opening."""
     n = f"rod{vid:02d}"
-    z_foot = HUB_H - HUB_CBORE_DEPTH                      # foot rests on counterbore floor
+    z_foot = HUB_H - HUB_CBORE_DEPTH
     return f'''<body name="{n}">
           <joint name="slide{vid:02d}" type="slide" axis="0 0 1" range="0 {STROKE*mm:g}" limited="true" damping="0.5"/>
           <geom class="rod" type="cylinder" fromto="0 0 {-ROD_LEN*mm:g} 0 0 {z_foot*mm:g}" size="{ROD_D/2*mm:g}" mass="{ROD_MASS:g}"/>
@@ -105,28 +134,35 @@ def rod_blueprint(vid):
         </body>'''
 
 
+def _taxel_ok(cx, cy, half):
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            px, py = cx + sx * half, cy + sy * half
+            if any(px*u[0] + py*u[1] > CUT_H - TAXEL_EDGE_MARGIN for u in U):
+                return False
+    return True
+
+
 def pad_blueprint(fid):
-    """Local frame: origin = face centre, +Z = outward normal, +X points at corner 0
-    (corners at 0/120/240 deg, circumradius PAD_R). Outer surface is at z = 0.
+    """Local frame: origin = face centre, +Z = outward normal, +X toward corner 0.
+    Outer (touch) surface at z = 0, skin extends to z = -PAD_T.
+    Outline = PAD_POLY (triangle with the 3 vertex openings cut out).
     Returns (body_inner_xml, [touch_sensor_xml, ...]).
 
-    Physics trick: contacts are generated by the small TAXEL boxes, NOT by one big
-    triangle - a flat triangle on a plane only produces contacts at its corners,
-    so centre taxels would never fire. The triangle mesh is visual only."""
-    corners = [(PAD_R * math.cos(math.radians(a)), PAD_R * math.sin(math.radians(a)))
-               for a in (0, 120, 240)]
+    Contacts come from the small TAXEL boxes (a big flat polygon on a plane would
+    only touch at its corners). The outline mesh is visual only."""
     inner, sensors = [], []
-
-    # taxel lattice: centroids of the up-pointing sub-triangles
     n = TAXEL_N
-    half = TAXEL_FILL * PAD_R / (2 * n)               # PAD_R/(2n) = sub-triangle inradius
+    half = TAXEL_FILL * PAD_R / (2 * n)
     k = 0
     for i in range(n):
         for j in range(n - i):
             l = n - 1 - i - j
             w = ((i + 1/3) / n, (j + 1/3) / n, (l + 1/3) / n)
-            x = sum(wi * c[0] for wi, c in zip(w, corners))
-            y = sum(wi * c[1] for wi, c in zip(w, corners))
+            x = sum(wi * c[0] for wi, c in zip(w, TRI))
+            y = sum(wi * c[1] for wi, c in zip(w, TRI))
+            if not _taxel_ok(x, y, half):
+                continue                            # would overlap a vertex opening
             name = f"pad{fid:02d}_t{k:02d}"
             sz = f"{half*mm:g} {half*mm:g} {PAD_T/2*mm:g}"
             pos = f"{x*mm:g} {y*mm:g} {-PAD_T/2*mm:g}"
@@ -144,17 +180,16 @@ def mesh_assets():
     hub_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), HUB_STL)
     if os.path.exists(hub_file):
         hub = f'<mesh name="hub_mesh" file="{HUB_STL}" scale="{mm} {mm} {mm}"/>'
-    else:                                              # built-in convex stand-in (no holes)
+    else:
         pts = []
         for z, r in ((0.0, HUB_BOT_R), (HUB_H, HUB_TOP_R)):
             for k in range(5):
                 a = math.radians(72 * k)
                 pts += [r * math.cos(a) * mm, r * math.sin(a) * mm, z * mm]
         hub = f'<mesh name="hub_mesh" vertex="{f(*pts)}"/>'
-    c = [(PAD_R * math.cos(math.radians(a)), PAD_R * math.sin(math.radians(a))) for a in (0, 120, 240)]
     zt, zb = -0.3 * mm, -PAD_T * mm                    # sink visual 0.3 mm to avoid z-fighting
-    pv = [coord for (x, y) in c for coord in (x*mm, y*mm, zt)] + \
-         [coord for (x, y) in c for coord in (x*mm, y*mm, zb)]
+    pv = [c for (x, y) in PAD_POLY for c in (x*mm, y*mm, zt)] + \
+         [c for (x, y) in PAD_POLY for c in (x*mm, y*mm, zb)]
     pad = f'<mesh name="pad_mesh" vertex="{f(*pv)}"/>'
     return hub, pad
 
@@ -163,14 +198,14 @@ def build():
     hub_mesh, pad_mesh = mesh_assets()
     body_parts, act, sens = [], [], []
 
-    # ---- 12 hubs, each carrying its own actuator rod ----
+    # ---- 12 hubs (inside the skin), each carrying its actuator rod ----
     for i, v in enumerate(V):
         z = unit(v)
         nb = next(j for j in range(12) if j != i and adj(i, j))
         d = sub(V[nb], v)
-        x = unit(sub(d, mul(z, dot(d, z))))            # pentagon corner 0 -> a neighbour vertex
+        x = unit(sub(d, mul(z, dot(d, z))))
         y = cross(z, x)
-        pos = mul(z, Rc - HUB_DEPTH)
+        pos = mul(z, HUB_APEX_R - HUB_DEPTH)           # <- moved inward vs. v1
         body_parts.append(f'''      <body name="hub{i:02d}" pos="{f(*mul(pos, mm))}" xyaxes="{f(*x, *y)}">
         {hub_blueprint(i)}
         {rod_blueprint(i)}
@@ -178,14 +213,13 @@ def build():
         act.append(f'<position name="act{i:02d}" joint="slide{i:02d}" kp="{KP:g}" kv="{KV:g}" '
                    f'ctrlrange="0 {STROKE*mm:g}" ctrllimited="true"/>')
 
-    # ---- 20 pads ----
+    # ---- 20 pads (outer skin) ----
+    ntax = 0
     for fi, (a, b, c) in enumerate(FACES):
         va, vb, vc = V[a], V[b], V[c]
         cen = mul(add(add(va, vb), vc), 1 / 3)
         n = unit(cen)
         x = unit(sub(va, cen))
-        if dot(cross(x, sub(vb, cen)), n) < 0:         # keep corners CCW
-            vb, vc = vc, vb
         y = cross(n, x)
         inner, sensors = pad_blueprint(fi)
         body_parts.append(f'''      <body name="pad{fi:02d}" pos="{f(*mul(cen, mm))}" xyaxes="{f(*x, *y)}">
@@ -199,9 +233,10 @@ def build():
 
   <default>
     <geom friction="1.0 0.005 0.0001"/>
-    <default class="hub"><geom type="mesh" contype="4" conaffinity="4" rgba="0.85 0.85 0.9 1" density="1000"/></default>
+    <!-- hubs are inside the skin: visual/mass only -->
+    <default class="hub"><geom type="mesh" contype="0" conaffinity="0" rgba="0.85 0.85 0.9 1" density="1000"/></default>
     <default class="rod"><geom contype="2" conaffinity="2" rgba="0.95 0.45 0.15 1"/></default>
-    <default class="padvis"><geom type="mesh" contype="0" conaffinity="0" group="2" rgba="0.3 0.6 1 0.8" density="0"/></default>
+    <default class="padvis"><geom type="mesh" contype="0" conaffinity="0" group="2" rgba="0.3 0.6 1 0.45" density="0"/></default>
     <default class="taxel">
       <geom type="box" contype="1" conaffinity="1" rgba="0.2 0.85 0.5 1" density="500"/>
       <site type="box" rgba="1 0 0 0.15" group="3"/>
@@ -215,8 +250,8 @@ def build():
 
   <worldbody>
     <light pos="0 0 1" dir="0 0 -1"/>
-    <!-- contype/conaffinity 7 = collides with pads(1), rods(2), hubs(4) -->
-    <geom name="floor" type="plane" size="2 2 0.1" contype="7" conaffinity="7" rgba="0.25 0.25 0.3 1"/>
+    <!-- contype/conaffinity 3 = collides with taxels(1) and rod feet(2) -->
+    <geom name="floor" type="plane" size="2 2 0.1" contype="3" conaffinity="3" rgba="0.25 0.25 0.3 1"/>
     <body name="core" pos="0 0 0.12">
       <freejoint name="root"/>
       <geom name="core_geom" type="sphere" size="{CORE_R*mm:g}" mass="{CORE_MASS:g}" contype="0" conaffinity="0" rgba="0.2 0.2 0.2 1"/>
@@ -236,12 +271,15 @@ def build():
   </sensor>
 </mujoco>
 '''
-    here = os.path.dirname(os.path.abspath(__file__))
+    here = os.path.dirname(os.path.abspath(__file__)).replace("/scripts","/")
     with open(os.path.join(here, OUT), "w") as fh:
         fh.write(xml)
-    print(f"wrote {OUT}: 12 hubs/actuators, 20 pads, {len(sens)} touch sensors")
-    print(f"circumradius {Rc:.1f} mm | hub slant {HUB_SLANT:.2f} deg | hub bottom R {HUB_BOT_R:.2f} mm "
-          f"| pad corner radius {PAD_R:.1f} mm (edge {PAD_R*math.sqrt(3):.1f} mm)")
+    print(f"wrote {OUT}: 12 hubs/actuators inside, 20 outer pads, {len(sens)} touch sensors "
+          f"({len(sens)//20} per pad)")
+    print(f"outer circumradius {Rc:.1f} mm | hub apex radius {HUB_APEX_R:.1f} mm "
+          f"(hub moved {DELTA:.2f} mm inward) | slant {HUB_SLANT:.2f} deg")
+    print(f"vertex opening apothem {L_CUT*math.cos(THETA):.2f} mm (foot radius {FOOT_R} mm) | "
+          f"pad outline {len(PAD_POLY)}-sided, circumradius {PAD_R:.1f} mm")
 
 
 if __name__ == "__main__":
