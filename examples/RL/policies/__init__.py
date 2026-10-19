@@ -14,19 +14,21 @@ class SphericalCPGPolicy(ActorCriticPolicy):
     """
     CPG-based ActorCriticPolicy for Stable-Baselines3.
 
-    Outputs a 12-D action in [-1, 1] (the environment's UrchinRoll.step
-    then maps this to [0, 0.025] m).
+    The environment (UrchinRoll) exposes a Box(-1, 1, (12,)) action and
+    maps [-1, 1] -> [0, 0.025] m internally, so this policy outputs
+    actions directly in [-1, 1] and lets the env handle the scaling.
 
-    Design
-    ------
-    observation -> MLP -> {direction, freq, amp, k, bias, phase[, fourier]}
-              -> spherical CPG -> 12-D action mean in [-1, 1]
-              -> DiagGaussian(action_mean, exp(log_std)) -> sample
-              -> clamp to [-1, 1]
+    Pipeline
+    --------
+        obs -> cpg_features (MLP) -> cpg_head
+            -> {direction, phase, amplitude, bias, wave_number[, fourier]}
+            -> spherical CPG -> 12-D action mean in [-1, 1]
+            -> DiagGaussian(mean, exp(log_std))
+            -> sample -> clamp to action space
 
-    Phase is predicted from the observation (not carried as mutable state),
-    so evaluate_actions() is deterministic w.r.t. the stored (obs, action)
-    pairs -- required for PPO's ratio to be meaningful.
+    Phase is predicted from the observation, NOT carried as mutable
+    state. This is required for PPO: evaluate_actions(obs, action) must
+    reproduce the same distribution the collector used.
     """
 
     def __init__(
@@ -34,18 +36,19 @@ class SphericalCPGPolicy(ActorCriticPolicy):
         observation_space,
         action_space,
         lr_schedule,
-        # CPG configuration
+        # --- CPG configuration --------------------------------------
         n_spines: int = 12,
         spine_directions: Optional[np.ndarray] = None,
-        # Ranges (in env's action space; -1..1)
-        min_frequency: float = 0.5,
-        max_frequency: float = 5.0,
+        # --- Head output ranges (units: env action space) -----------
         min_amplitude: float = 0.05,
         max_amplitude: float = 1.0,
         min_wave_number: float = 0.0,
         max_wave_number: float = 8.0,
         fourier_harmonics: int = 0,
+        # --- Network -------------------------------------------------
         hidden_dim: int = 256,
+        # --- Exploration ---------------------------------------------
+        log_std_init: float = -1.0,
         **kwargs,
     ):
         if not isinstance(action_space, spaces.Box):
@@ -56,25 +59,23 @@ class SphericalCPGPolicy(ActorCriticPolicy):
                 f"got {action_space.shape}"
             )
 
-        super().__init__(
-            observation_space, action_space, lr_schedule, **kwargs
-        )
+        super().__init__(observation_space, action_space, lr_schedule, **kwargs)
 
-        # --- Bookkeeping ------------------------------------------------
+        # --- Bookkeeping --------------------------------------------
         self.n_spines = n_spines
         self.actuator_min = float(action_space.low.min())
         self.actuator_max = float(action_space.high.max())
 
-        self.min_frequency = min_frequency
-        self.max_frequency = max_frequency
         self.min_amplitude = min_amplitude
         self.max_amplitude = max_amplitude
         self.min_wave_number = min_wave_number
         self.max_wave_number = max_wave_number
         self.fourier_harmonics = fourier_harmonics
 
-        # --- Spine geometry --------------------------------------------
+        # --- Spine geometry -----------------------------------------
         if spine_directions is None:
+            # Fallback: 12 spines evenly distributed in the XY plane.
+            # Replace with your real 3-D spine directions for best results.
             angles = np.linspace(0.0, 2.0 * np.pi, n_spines, endpoint=False)
             spine_directions = np.stack(
                 [np.cos(angles), np.sin(angles), np.zeros(n_spines)], axis=1
@@ -92,7 +93,7 @@ class SphericalCPGPolicy(ActorCriticPolicy):
             torch.tensor(spine_directions, dtype=torch.float32),
         )
 
-        # --- Feature MLP ------------------------------------------------
+        # --- Feature MLP --------------------------------------------
         obs_dim = int(np.prod(observation_space.shape))
         self.cpg_features = nn.Sequential(
             nn.Linear(obs_dim, hidden_dim), nn.Tanh(),
@@ -100,25 +101,35 @@ class SphericalCPGPolicy(ActorCriticPolicy):
             nn.Linear(hidden_dim, hidden_dim), nn.Tanh(),
         )
 
-        # --- CPG head ---------------------------------------------------
+        # --- CPG head -----------------------------------------------
         fourier_dim = 1 + 2 * fourier_harmonics
-        self.cpg_output_dim = 3 + 1 + 1 + 1 + 1 + 1 + fourier_dim
+        #  3 direction + 1 frequency + 1 amplitude + 1 wave_number
+        #  + 1 bias    + 1 phase     + fourier_dim
+        self.cpg_output_dim = 6 + 1 + fourier_dim
         self.cpg_head = nn.Linear(hidden_dim, self.cpg_output_dim)
-        # Start close to zero-mean policy:
-        nn.init.zeros_(self.cpg_head.weight)
-        nn.init.zeros_(self.cpg_head.bias)
 
-        # --- Value net (overrides SB3's default MlpExtractor-based one) -
+        # IMPORTANT: small random init, NOT zeros. Zero init makes the
+        # head a constant function of the observation, which collapses
+        # direction/proj/phase and produces identical outputs on every
+        # spine.
+        nn.init.normal_(self.cpg_head.weight, mean=0.0, std=0.01)
+        nn.init.normal_(self.cpg_head.bias,   mean=0.0, std=0.01)
+
+        # Per-spine learnable phase offset. Gives the network an escape
+        # hatch even if the learned direction happens to be orthogonal
+        # to all spine directions.
+        self.spine_phase_bias = nn.Parameter(torch.zeros(n_spines))
+
+        # --- Value net (replaces SB3's default) ---------------------
+        # All call sites (forward / evaluate_actions / predict_values)
+        # feed it cpg_features output, i.e. (B, hidden_dim).
         self.value_net = nn.Linear(hidden_dim, 1)
 
-        # --- Action noise ----------------------------------------------
-        # SB3's DiagGaussianDistribution wants a log_std parameter of
-        # shape (action_dim,). This is what PPO trains (via the entropy
-        # bonus / log-prob gradients).
-        self.log_std = nn.Parameter(torch.zeros(n_spines))
+        # --- Action noise -------------------------------------------
+        # log_std is what PPO actually optimizes for exploration.
+        self.log_std = nn.Parameter(torch.full((n_spines,), float(log_std_init)))
 
-        # SB3 expects this attribute to exist; not actually used by our
-        # forward, but harmless.
+        # Declared for SB3 bookkeeping; unused by our forward.
         self.latent_dim_pi = hidden_dim
 
     # ================================================================
@@ -126,15 +137,13 @@ class SphericalCPGPolicy(ActorCriticPolicy):
     # ================================================================
     def _get_cpg_features(self, obs: torch.Tensor) -> torch.Tensor:
         obs = obs.float()
-        if obs.dim() > 2:
-            obs = obs.flatten(start_dim=1)
-        elif obs.dim() == 1:
+        if obs.dim() == 1:
             obs = obs.unsqueeze(0)
+        elif obs.dim() > 2:
+            obs = obs.flatten(start_dim=1)
         return self.cpg_features(obs)
 
     def extract_features(self, obs, features_extractor=None):
-        # Called by SB3 during _build() to size the default nets; our
-        # forward() bypasses those nets anyway.
         return self._get_cpg_features(obs)
 
     # ================================================================
@@ -144,68 +153,71 @@ class SphericalCPGPolicy(ActorCriticPolicy):
         raw = self.cpg_head(features)
         idx = 0
 
-        # Direction (unit vector in 3-D)
+        # -- Direction (unit vector in 3-D) --------------------------
         direction_raw = raw[:, idx:idx + 3]; idx += 3
         direction = torch.tanh(direction_raw)
         direction = direction / (torch.linalg.norm(direction, dim=-1, keepdim=True) + 1e-8)
 
-        # Frequency
-        f = torch.sigmoid(raw[:, idx:idx + 1]); idx += 1
-        frequency = self.min_frequency + f * (self.max_frequency - self.min_frequency)
+        # -- Frequency (kept for API; no effect in stateless formula) -
+        _frequency_raw = raw[:, idx:idx + 1]; idx += 1
 
-        # Amplitude
+        # -- Amplitude -----------------------------------------------
         a = torch.sigmoid(raw[:, idx:idx + 1]); idx += 1
         amplitude = self.min_amplitude + a * (self.max_amplitude - self.min_amplitude)
 
-        # Wave number
+        # -- Wave number ---------------------------------------------
         k = torch.sigmoid(raw[:, idx:idx + 1]); idx += 1
         wave_number = self.min_wave_number + k * (self.max_wave_number - self.min_wave_number)
 
-        # Bias — mapped to [-1, 1] in the env's action space.
+        # -- Bias (a resting offset in the env's action range) -------
         b = torch.sigmoid(raw[:, idx:idx + 1]); idx += 1
         bias = self.actuator_min + b * (self.actuator_max - self.actuator_min)
 
-        # Phase in [0, 2π)
+        # -- Phase in [0, 2π) ----------------------------------------
         phase = torch.sigmoid(raw[:, idx:idx + 1]) * 2.0 * math.pi; idx += 1
 
-        # Fourier coefficients (optional)
+        # -- Optional Fourier coefficients ---------------------------
         if self.fourier_harmonics > 0:
             fourier = torch.tanh(raw[:, idx:idx + 1 + 2 * self.fourier_harmonics])
         else:
             fourier = None
 
-        # Spatial phase
+        # -- Spatial phase -------------------------------------------
         # direction: [B, 1, 3]; spine_directions: [1, N, 3]
         proj = torch.sum(
             direction.unsqueeze(1) * self.spine_directions.unsqueeze(0),
             dim=-1,
-        )                                    # [B, N]
-        spatial_phase = phase + wave_number * proj  # broadcast [B,1]+[B,N]
+        )                                              # [B, N]
+        spatial_phase = (
+            phase
+            + wave_number * proj
+            + self.spine_phase_bias.unsqueeze(0)       # learnable per-spine offset
+        )                                              # [B, N]
 
-        # Waveform
+        # -- Waveform ------------------------------------------------
         if self.fourier_harmonics == 0:
             waveform = torch.sin(spatial_phase)
         else:
             waveform = fourier[:, 0:1].expand(-1, self.n_spines)
             c = 1
             for h in range(1, self.fourier_harmonics + 1):
-                s = fourier[:, c:c + 1]; cc = fourier[:, c + 1:c + 2]; c += 2
+                s = fourier[:, c:c + 1]
+                cc = fourier[:, c + 1:c + 2]
+                c += 2
                 waveform = waveform + s * torch.sin(h * spatial_phase)
                 waveform = waveform + cc * torch.cos(h * spatial_phase)
 
-        # Bias + amplitude*waveform
+        # -- Combine & clamp -----------------------------------------
         action = bias + amplitude * waveform
-
-        # Clamp to action space [-1, 1]
         return torch.clamp(action, self.actuator_min, self.actuator_max)
 
     # ================================================================
     # Distribution
     # ================================================================
     def _make_dist(self, action_mean: torch.Tensor) -> DiagGaussianDistribution:
-        # NOTE: no SquashedDiagGaussian -- we clamp after sampling,
-        #       so the log-prob of the Gaussian is the correct
-        #       (unmodified) one. The env also clamps internally.
+        # Plain Gaussian; we clamp after sampling. Do NOT use
+        # SquashedDiagGaussian here unless you also apply the
+        # corresponding log-prob correction -- the env clamps anyway.
         dist = DiagGaussianDistribution(self.n_spines)
         dist.proba_distribution(
             action_mean,
@@ -213,7 +225,7 @@ class SphericalCPGPolicy(ActorCriticPolicy):
         )
         return dist
 
-        # ================================================================
+    # ================================================================
     # SB3 API
     # ================================================================
     def forward(self, obs: torch.Tensor, deterministic: bool = False):
@@ -245,7 +257,6 @@ class SphericalCPGPolicy(ActorCriticPolicy):
         values = self.value_net(features)
         return values, log_prob, entropy
 
-    # --- ADD THESE TWO OVERRIDES -----------------------------------
     def predict_values(self, obs: torch.Tensor) -> torch.Tensor:
         features = self._get_cpg_features(obs)
         return self.value_net(features)
