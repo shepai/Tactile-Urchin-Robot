@@ -26,7 +26,7 @@ HUB_SLANT       = None    # None = exact icosahedron value (31.72 deg). Your SCA
 HUB_HOLE_D      = 4.0
 HUB_CBORE_D     = 8.0
 HUB_CBORE_DEPTH = 2.0
-HUB_STL         = "/home/dexter/Documents/GitHub/Tactile-Urchin-Robot/3D files/corner.stl"   # used if present next to icosabot.xml (mm units)
+HUB_STL         = "corner.stl"   # used if present next to icosabot.xml (mm units)
 HUB_CLEAR       = 0.1         # air gap between pad underside and hub sloped faces
 
 # --- Linear actuator (rod through hub) ---

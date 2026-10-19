@@ -7,14 +7,16 @@ import mujoco, mujoco.viewer
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.logger import configure
- 
+from policies import *
+
 from tactile_urchin.envs import Urchin      # <- adjust to where your base class lives
 
- 
+
+
 def run(env_name, model_name, log_name, total_timesteps, n_envs=8):
     os.makedirs("models", exist_ok=True)
     env = make_vec_env(env_name, n_envs=n_envs)
-    model = PPO("MlpPolicy", env, n_steps=512, batch_size=1024, device="cpu", verbose=1)
+    model = PPO(SphericalCPGPolicy, env, n_steps=512, batch_size=1024, device="cpu", verbose=1)
     model.set_logger(configure(f"logs/{log_name}", ["stdout", "csv"]))   # add "tensorboard" if installed
     model.learn(total_timesteps)
     model.save(f"models/{model_name}")
