@@ -36,6 +36,10 @@ class UrchinRoll(TactileUrchin):
         self.cmd = np.zeros(2)
         self.hi = 0.025
         self.action_space = spaces.Box(-1.0, 1.0, (self.action_dim,), np.float32)  # SB3-friendly
+        self.frame_skip = 5
+        self.dt = 0.002  # physics timestep
+        self.policy_dt = self.dt * self.frame_skip  # 0.05 s
+        self._v_ema = np.zeros(2, dtype=np.float64)
     def _sample_cmd(self):
         if self.np_random.random() < P_ZERO:
             self.cmd = np.zeros(2)
