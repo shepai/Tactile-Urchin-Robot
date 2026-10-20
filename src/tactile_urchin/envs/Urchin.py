@@ -25,48 +25,58 @@ P_ZERO       = 0.2    # fraction of commands that are "stand still"
 CMD_HOLD_S   = 4.0    # resample the command every N seconds inside an episode
 EMA_TAU_S    = 0.5    # velocity smoothing time-constant
 class UrchinRoll(TactileUrchin):
-    """Follow a random velocity command (world-frame direction + speed)."""
-    P_ZERO       = 0.2    # fraction of commands that are "stand still"
-    CMD_HOLD_S   = 4.0    # resample the command every N seconds inside an episode
-    EMA_TAU_S    = 0.5    # velocity smoothing time-constant
-    def __init__(self, xml_subpath=("assets", "icosabot.xml"), max_speed=0.2, **kw):   # <- your XML path
+    P_ZERO     = 0.2
+    CMD_HOLD_S = 4.0
+    EMA_TAU_S  = 0.5
+
+    def __init__(self, xml_subpath=("assets", "icosabot.xml"), max_speed=0.2, **kw):
         super().__init__(xml_subpath, **kw)
-        self.observation_space = spaces.Box(-np.inf, np.inf, (self.trace.size + 30 + 3,), np.float32)
+        # +3 cmd (body frame) +3 gravity (body frame)
+        self.observation_space = spaces.Box(-np.inf, np.inf, (self.trace.size + 30 + 3 + 3,), np.float32)
         self.max_speed = max_speed
         self.cmd = np.zeros(2)
         self.hi = 0.025
-        self.action_space = spaces.Box(-1.0, 1.0, (self.action_dim,), np.float32)  # SB3-friendly
+        self.action_space = spaces.Box(-1.0, 1.0, (self.action_dim,), np.float32)
         self.frame_skip = 5
-        self.dt = 0.002  # physics timestep
-        self.policy_dt = self.dt * self.frame_skip  # 0.05 s
-        self._v_ema = np.zeros(2, dtype=np.float64)
+        self.dt = 0.002                          # physics timestep (leave as is)
+        self.policy_dt = self.dt * self.frame_skip   # 0.01 s... see note below
+        self._v_ema = np.zeros(2)
+        self._a = np.zeros(self.action_dim)
+        self._t_cmd = 0.0
+
     def _sample_cmd(self):
-        if self.np_random.random() < P_ZERO:
+        if self.np_random.random() < self.P_ZERO:
             self.cmd = np.zeros(2)
         else:
             ang = self.np_random.uniform(0, 2 * np.pi)
             spd = self.np_random.uniform(0.2, 1.0) * self.max_speed
             self.cmd = spd * np.array([np.cos(ang), np.sin(ang)])
+
     def reset(self, seed=None, options=None):
         super().reset(seed=seed, options=options)
-        ang = self.np_random.uniform(0, 2 * np.pi)
-        spd = 0.0 if self.np_random.random() < 0.1 else self.np_random.uniform(0.2, 1.0) * self.max_speed
-        self.cmd = spd * np.array([np.cos(ang), np.sin(ang)])
+        self._sample_cmd()
+        self._t_cmd = 0.0
+        self._v_ema[:] = 0.0
+        self._a = np.zeros(self.action_dim)
         return self._get_obs(), {}
- 
+
     def step(self, action):
-        self._a = (np.asarray(action) + 1) / 2             # [-1,1] -> [0,1]
-        return super().step(self._a * self.hi)             # -> [0, 0.025] m
- 
+        self._a = (np.asarray(action) + 1) / 2
+        self._t_cmd += self.policy_dt
+        if self._t_cmd >= self.CMD_HOLD_S:
+            self._sample_cmd()
+            self._t_cmd = 0.0
+        return super().step(self._a * self.hi)
+
     def _get_obs(self):
         obs = super()._get_obs()
-        R = self.data.xmat[1].reshape(3, 3)                # root body orientation
-        cmd_body = R.T @ np.array([*self.cmd, 0.0]) / self.max_speed   # command in body frame
-        return np.append(obs, cmd_body).astype(np.float32)
- 
-    
+        R = self.data.xmat[1].reshape(3, 3)
+        cmd_body  = R.T @ np.array([*self.cmd, 0.0]) / self.max_speed
+        grav_body = R.T @ np.array([0.0, 0.0, -1.0])         # which way is down, in the body frame
+        return np.concatenate([obs, cmd_body, grav_body]).astype(np.float32)
+
     def _reward(self):
-        alpha = 1.0 - np.exp(-self.dt / EMA_TAU_S)
+        alpha = 1.0 - np.exp(-self.policy_dt / self.EMA_TAU_S)   # <- was self.dt
         self._v_ema += alpha * (self.data.qvel[:2] - self._v_ema)
         v = self._v_ema
 

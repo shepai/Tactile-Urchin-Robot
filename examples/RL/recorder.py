@@ -34,7 +34,7 @@ class TrainingVideoCallback(BaseCallback):
         total_timesteps,
         video_dir,
         every_percent=5,
-        video_seconds=5,
+        video_seconds=15,
         verbose=1,
     ):
         super().__init__(verbose)
