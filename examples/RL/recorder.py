@@ -1,6 +1,8 @@
 import os 
 import cv2
 from stable_baselines3.common.callbacks import BaseCallback
+import gymnasium as gym
+import mujoco
 def write_video(frames, path, fps=30):
     if not frames:
         return
@@ -31,7 +33,7 @@ class TrainingVideoCallback(BaseCallback):
         env_name,
         total_timesteps,
         video_dir,
-        every_percent=10,
+        every_percent=5,
         video_seconds=5,
         verbose=1,
     ):
@@ -46,15 +48,6 @@ class TrainingVideoCallback(BaseCallback):
         self.next_percent = every_percent
         self.render_env = None
 
-    def _on_training_start(self):
-        os.makedirs(self.video_dir, exist_ok=True)
-
-        # Separate environment so recording does not disturb training.
-        self.render_env = gym.make(
-            self.env_name,
-            render_mode="rgb_array",
-        )
-
     def _on_step(self):
         progress = 100 * self.num_timesteps / self.total_timesteps
 
@@ -66,46 +59,48 @@ class TrainingVideoCallback(BaseCallback):
             self.next_percent += self.every_percent
 
         return True
+    def _on_training_start(self):
+        os.makedirs(self.video_dir, exist_ok=True)
+
+        self.render_env = gym.make(self.env_name)              # no render_mode
+        raw = self.render_env.unwrapped
+        self.renderer = mujoco.Renderer(raw.model, height=480, width=640)
+
+        core = mujoco.mj_name2id(raw.model, mujoco.mjtObj.mjOBJ_BODY, "core")
+        self.cam = mujoco.MjvCamera()                          # follows the robot
+        self.cam.type = mujoco.mjtCamera.mjCAMERA_TRACKING
+        self.cam.trackbodyid = core
+        self.cam.distance, self.cam.azimuth, self.cam.elevation = 0.5, 135, -25
 
     def _record(self, percent):
         env = self.render_env
+        raw = env.unwrapped
         obs, _ = env.reset()
 
-        # Estimate policy frequency from the MuJoCo model.
-        raw = env.unwrapped
-        policy_dt = (
-            raw.frame_skip * raw.model.opt.timestep
-        )
+        policy_dt = raw.frame_skip * raw.model.opt.timestep
         fps = max(1, round(1.0 / policy_dt))
-
         n_frames = max(1, round(self.video_seconds * fps))
         frames = []
 
         for _ in range(n_frames):
-            frame = env.render()
-            if frame is not None:
-                frames.append(np.asarray(frame).copy())
+            self.renderer.update_scene(raw.data, camera=self.cam)
+            frames.append(self.renderer.render().copy())
 
-            action, _ = self.model.predict(
-                obs,
-                deterministic=True,
-            )
+            action, _ = self.model.predict(obs, deterministic=True)
             obs, _, terminated, truncated, _ = env.step(action)
-
             if terminated or truncated:
                 obs, _ = env.reset()
 
-        path = os.path.join(
-            self.video_dir,
-            f"progress_{percent:03d}pct_{self.num_timesteps}.mp4",
-        )
-
+        path = os.path.join(self.video_dir,
+                            f"progress_{percent:03d}pct_{self.num_timesteps}.mp4")
         write_video(frames, path, fps=fps)
-
         if self.verbose:
             print(f"Saved training video: {path}")
 
     def _on_training_end(self):
+        if getattr(self, "renderer", None) is not None:
+            self.renderer.close()
+            self.renderer = None
         if self.render_env is not None:
             self.render_env.close()
             self.render_env = None
