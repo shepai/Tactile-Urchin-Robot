@@ -13,7 +13,7 @@ from recorder import *
 from tactile_urchin.envs import Urchin      # <- adjust to where your base class lives
 
 def run(env_name, model_name, log_name, total_timesteps, n_envs=8, record_video=True,
-        video_every_percent=10, video_seconds=5):
+        video_every_percent=10, video_seconds=7):
     os.makedirs("models", exist_ok=True)
     log_dir = os.path.join("logs", log_name)
     os.makedirs(log_dir, exist_ok=True)
