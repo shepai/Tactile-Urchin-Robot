@@ -33,7 +33,7 @@ HUB_CLEAR       = 0.1         # air gap between pad underside and hub sloped fac
 ROD_D     = 3.6
 ROD_LEN   = 22.0
 FOOT_R    = 3.5
-STROKE    = 30.0     # NOTE: a 12 mm solenoid will really give ~2-5 mm. Change this.
+STROKE    = 5.0     # NOTE: a 12 mm solenoid will really give ~2-5 mm. Change this.
 ROD_MASS  = 0.10
 KP, KV    = 5000.0, 0.5
 
@@ -48,7 +48,7 @@ TAXEL_EDGE_MARGIN = 0.5  # keep taxels this far from the vertex openings
 # --- Core (electronics / battery) ---
 CORE_R, CORE_MASS = 25.0, 0.10
 
-OUT = "icosabot.xml"
+OUT = "../icosabot.xml"
 # ============================================================================
 
 mm = 1e-3
