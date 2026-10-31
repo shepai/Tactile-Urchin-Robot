@@ -50,7 +50,7 @@ def apply_cmd(raw, vec):
 def visualise(env_name, model_name):
     env = gym.make(env_name)
     raw = env.unwrapped
-    model = PPO.load(f"models/{model_name}", device="cpu")
+    model = PPO.load(f"models/{model_name}", device="auto")
     dt = raw.frame_skip * raw.model.opt.timestep
     obs, _ = env.reset()
 
