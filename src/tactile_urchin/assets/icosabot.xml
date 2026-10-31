@@ -30,7 +30,7 @@
       <body name="hub00" pos="0 -0.0345582 -0.0559164" xyaxes="-0.587785 -0.688191 0.425325 -0.809017 0.5 -0.309017">
         <geom class="hub" mesh="hub_mesh" name="hub00_geom"/>
         <body name="rod00">
-          <joint name="slide00" type="slide" axis="0 0 1" range="0 0.005" limited="true" damping="0.5"/>
+          <joint name="slide00" type="slide" axis="0 0 1" range="0 0.015" limited="true" damping="0.5"/>
           <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.1"/>
           <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
         </body>
@@ -38,7 +38,7 @@
       <body name="hub01" pos="-0.0345582 -0.0559164 0" xyaxes="0.262866 -0.16246 -0.951057 0.809017 -0.5 0.309017">
         <geom class="hub" mesh="hub_mesh" name="hub01_geom"/>
         <body name="rod01">
-          <joint name="slide01" type="slide" axis="0 0 1" range="0 0.005" limited="true" damping="0.5"/>
+          <joint name="slide01" type="slide" axis="0 0 1" range="0 0.015" limited="true" damping="0.5"/>
           <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.1"/>
           <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
         </body>
@@ -46,7 +46,7 @@
       <body name="hub02" pos="-0.0559164 0 -0.0345582" xyaxes="0.425325 -0.587785 -0.688191 -0.309017 -0.809017 0.5">
         <geom class="hub" mesh="hub_mesh" name="hub02_geom"/>
         <body name="rod02">
-          <joint name="slide02" type="slide" axis="0 0 1" range="0 0.005" limited="true" damping="0.5"/>
+          <joint name="slide02" type="slide" axis="0 0 1" range="0 0.015" limited="true" damping="0.5"/>
           <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.1"/>
           <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
         </body>
@@ -54,7 +54,7 @@
       <body name="hub03" pos="0 -0.0345582 0.0559164" xyaxes="-0.587785 -0.688191 -0.425325 0.809017 -0.5 -0.309017">
         <geom class="hub" mesh="hub_mesh" name="hub03_geom"/>
         <body name="rod03">
-          <joint name="slide03" type="slide" axis="0 0 1" range="0 0.005" limited="true" damping="0.5"/>
+          <joint name="slide03" type="slide" axis="0 0 1" range="0 0.015" limited="true" damping="0.5"/>
           <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.1"/>
           <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
         </body>
@@ -62,7 +62,7 @@
       <body name="hub04" pos="-0.0345582 0.0559164 0" xyaxes="-0.688191 -0.425325 -0.587785 -0.5 -0.309017 0.809017">
         <geom class="hub" mesh="hub_mesh" name="hub04_geom"/>
         <body name="rod04">
-          <joint name="slide04" type="slide" axis="0 0 1" range="0 0.005" limited="true" damping="0.5"/>
+          <joint name="slide04" type="slide" axis="0 0 1" range="0 0.015" limited="true" damping="0.5"/>
           <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.1"/>
           <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
         </body>
@@ -70,7 +70,7 @@
       <body name="hub05" pos="0.0559164 0 -0.0345582" xyaxes="-0.425325 -0.587785 -0.688191 -0.309017 0.809017 -0.5">
         <geom class="hub" mesh="hub_mesh" name="hub05_geom"/>
         <body name="rod05">
-          <joint name="slide05" type="slide" axis="0 0 1" range="0 0.005" limited="true" damping="0.5"/>
+          <joint name="slide05" type="slide" axis="0 0 1" range="0 0.015" limited="true" damping="0.5"/>
           <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.1"/>
           <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
         </body>
@@ -78,7 +78,7 @@
       <body name="hub06" pos="0 0.0345582 -0.0559164" xyaxes="0 -0.850651 -0.525731 -1 0 -0">
         <geom class="hub" mesh="hub_mesh" name="hub06_geom"/>
         <body name="rod06">
-          <joint name="slide06" type="slide" axis="0 0 1" range="0 0.005" limited="true" damping="0.5"/>
+          <joint name="slide06" type="slide" axis="0 0 1" range="0 0.015" limited="true" damping="0.5"/>
           <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.1"/>
           <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
         </body>
@@ -86,7 +86,7 @@
       <body name="hub07" pos="0.0345582 -0.0559164 0" xyaxes="-0.262866 -0.16246 -0.951057 0.809017 0.5 -0.309017">
         <geom class="hub" mesh="hub_mesh" name="hub07_geom"/>
         <body name="rod07">
-          <joint name="slide07" type="slide" axis="0 0 1" range="0 0.005" limited="true" damping="0.5"/>
+          <joint name="slide07" type="slide" axis="0 0 1" range="0 0.015" limited="true" damping="0.5"/>
           <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.1"/>
           <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
         </body>
@@ -94,7 +94,7 @@
       <body name="hub08" pos="-0.0559164 0 0.0345582" xyaxes="-0.16246 -0.951057 -0.262866 0.5 -0.309017 0.809017">
         <geom class="hub" mesh="hub_mesh" name="hub08_geom"/>
         <body name="rod08">
-          <joint name="slide08" type="slide" axis="0 0 1" range="0 0.005" limited="true" damping="0.5"/>
+          <joint name="slide08" type="slide" axis="0 0 1" range="0 0.015" limited="true" damping="0.5"/>
           <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.1"/>
           <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
         </body>
@@ -102,7 +102,7 @@
       <body name="hub09" pos="0 0.0345582 0.0559164" xyaxes="0 -0.850651 0.525731 1 0 -0">
         <geom class="hub" mesh="hub_mesh" name="hub09_geom"/>
         <body name="rod09">
-          <joint name="slide09" type="slide" axis="0 0 1" range="0 0.005" limited="true" damping="0.5"/>
+          <joint name="slide09" type="slide" axis="0 0 1" range="0 0.015" limited="true" damping="0.5"/>
           <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.1"/>
           <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
         </body>
@@ -110,7 +110,7 @@
       <body name="hub10" pos="0.0345582 0.0559164 0" xyaxes="-0.850651 0.525731 0 0 -0 1">
         <geom class="hub" mesh="hub_mesh" name="hub10_geom"/>
         <body name="rod10">
-          <joint name="slide10" type="slide" axis="0 0 1" range="0 0.005" limited="true" damping="0.5"/>
+          <joint name="slide10" type="slide" axis="0 0 1" range="0 0.015" limited="true" damping="0.5"/>
           <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.1"/>
           <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
         </body>
@@ -118,7 +118,7 @@
       <body name="hub11" pos="0.0559164 0 0.0345582" xyaxes="-0.425325 -0.587785 0.688191 0.309017 -0.809017 -0.5">
         <geom class="hub" mesh="hub_mesh" name="hub11_geom"/>
         <body name="rod11">
-          <joint name="slide11" type="slide" axis="0 0 1" range="0 0.005" limited="true" damping="0.5"/>
+          <joint name="slide11" type="slide" axis="0 0 1" range="0 0.015" limited="true" damping="0.5"/>
           <geom class="rod" type="cylinder" fromto="0 0 -0.022 0 0 0.002" size="0.0018" mass="0.1"/>
           <geom class="rod" type="sphere" pos="0 0 0.002" size="0.0035" mass="0.002"/>
         </body>
@@ -667,18 +667,18 @@
   </worldbody>
 
   <actuator>
-    <position name="act00" joint="slide00" kp="5000" kv="0.5" ctrlrange="0 0.005" ctrllimited="true"/>
-    <position name="act01" joint="slide01" kp="5000" kv="0.5" ctrlrange="0 0.005" ctrllimited="true"/>
-    <position name="act02" joint="slide02" kp="5000" kv="0.5" ctrlrange="0 0.005" ctrllimited="true"/>
-    <position name="act03" joint="slide03" kp="5000" kv="0.5" ctrlrange="0 0.005" ctrllimited="true"/>
-    <position name="act04" joint="slide04" kp="5000" kv="0.5" ctrlrange="0 0.005" ctrllimited="true"/>
-    <position name="act05" joint="slide05" kp="5000" kv="0.5" ctrlrange="0 0.005" ctrllimited="true"/>
-    <position name="act06" joint="slide06" kp="5000" kv="0.5" ctrlrange="0 0.005" ctrllimited="true"/>
-    <position name="act07" joint="slide07" kp="5000" kv="0.5" ctrlrange="0 0.005" ctrllimited="true"/>
-    <position name="act08" joint="slide08" kp="5000" kv="0.5" ctrlrange="0 0.005" ctrllimited="true"/>
-    <position name="act09" joint="slide09" kp="5000" kv="0.5" ctrlrange="0 0.005" ctrllimited="true"/>
-    <position name="act10" joint="slide10" kp="5000" kv="0.5" ctrlrange="0 0.005" ctrllimited="true"/>
-    <position name="act11" joint="slide11" kp="5000" kv="0.5" ctrlrange="0 0.005" ctrllimited="true"/>
+    <position name="act00" joint="slide00" kp="5000" kv="0.5" ctrlrange="0 0.015" ctrllimited="true"/>
+    <position name="act01" joint="slide01" kp="5000" kv="0.5" ctrlrange="0 0.015" ctrllimited="true"/>
+    <position name="act02" joint="slide02" kp="5000" kv="0.5" ctrlrange="0 0.015" ctrllimited="true"/>
+    <position name="act03" joint="slide03" kp="5000" kv="0.5" ctrlrange="0 0.015" ctrllimited="true"/>
+    <position name="act04" joint="slide04" kp="5000" kv="0.5" ctrlrange="0 0.015" ctrllimited="true"/>
+    <position name="act05" joint="slide05" kp="5000" kv="0.5" ctrlrange="0 0.015" ctrllimited="true"/>
+    <position name="act06" joint="slide06" kp="5000" kv="0.5" ctrlrange="0 0.015" ctrllimited="true"/>
+    <position name="act07" joint="slide07" kp="5000" kv="0.5" ctrlrange="0 0.015" ctrllimited="true"/>
+    <position name="act08" joint="slide08" kp="5000" kv="0.5" ctrlrange="0 0.015" ctrllimited="true"/>
+    <position name="act09" joint="slide09" kp="5000" kv="0.5" ctrlrange="0 0.015" ctrllimited="true"/>
+    <position name="act10" joint="slide10" kp="5000" kv="0.5" ctrlrange="0 0.015" ctrllimited="true"/>
+    <position name="act11" joint="slide11" kp="5000" kv="0.5" ctrlrange="0 0.015" ctrllimited="true"/>
   </actuator>
 
   <sensor>

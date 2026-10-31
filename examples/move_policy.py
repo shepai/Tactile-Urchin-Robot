@@ -71,7 +71,7 @@ def visualise(env_name, model_name):
 
 
 ENV_NAME = "Urchin"
-MODEL_NAME = "urchin_v2"      # -> models/urchin_v2.zip
+MODEL_NAME = "urchin_v1"      # -> models/urchin_v2.zip
 
 if __name__ == "__main__":
     visualise(ENV_NAME, MODEL_NAME)

@@ -33,7 +33,7 @@ HUB_CLEAR       = 0.1         # air gap between pad underside and hub sloped fac
 ROD_D     = 3.6
 ROD_LEN   = 22.0
 FOOT_R    = 3.5
-STROKE    = 5.0     # NOTE: a 12 mm solenoid will really give ~2-5 mm. Change this.
+STROKE    = 15.0     # NOTE: a 12 mm solenoid will really give ~2-5 mm. Change this.
 ROD_MASS  = 0.10
 KP, KV    = 5000.0, 0.5
 

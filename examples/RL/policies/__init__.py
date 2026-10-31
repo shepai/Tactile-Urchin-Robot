@@ -32,12 +32,14 @@ class TaxelFlowPolicy(ActorCriticPolicy):
 
     def __init__(self, observation_space, action_space, lr_schedule,
                  spine_directions=None, anchor_directions=None,
-                 hidden_dim=256, log_std_init=-3.0,        # small noise -> no random flicker
+                 hidden_dim=50, log_std_init=-1.5,        # small noise -> no random flicker
                  elev_deg=50.0,                            # prior: push point 50 deg below horizontal, behind motion
                  sel_sharp=60.0,                           # sharpness of the nearest-taxel choice
                  min_reach_deg=35.0, max_reach_deg=70.0,   # spines within this angle of the anchor fire
                  edge_deg=8.0,                             # width of the cut-off edge
-                 min_amp=0.8,                              # pushes are at least 80% of full stroke
+                 min_amp=0.5,                              # pushes are at least 80% of full stroke
+                 max_active=3,
+                 max_ext=1.0,
                  **kwargs):
         if spine_directions is None or anchor_directions is None:
             raise ValueError("Pass spine_directions=... and anchor_directions=... via policy_kwargs.")
@@ -54,12 +56,14 @@ class TaxelFlowPolicy(ActorCriticPolicy):
         self.reach_lo, self.reach_hi = math.radians(min_reach_deg), math.radians(max_reach_deg)
         self.edge = math.radians(edge_deg)
         self.min_amp = min_amp
-
+        self.max_active, self.max_ext = max_active, max_ext
         obs_dim = int(np.prod(observation_space.shape))
         self.trunk = nn.Sequential(
             nn.Linear(obs_dim, hidden_dim), nn.Tanh(),
             nn.Linear(hidden_dim, hidden_dim), nn.Tanh(),
             nn.Linear(hidden_dim, hidden_dim), nn.Tanh())
+        self.vtrunk = nn.Sequential(nn.Linear(obs_dim, hidden_dim), nn.Tanh(),
+                            nn.Linear(hidden_dim, hidden_dim), nn.Tanh())
         self.head = nn.Linear(hidden_dim, 5)                   # push-point offset (3), reach, amplitude
         nn.init.normal_(self.head.weight, std=0.01); nn.init.zeros_(self.head.bias)
         self.value_net = nn.Linear(hidden_dim, 1)
@@ -86,18 +90,21 @@ class TaxelFlowPolicy(ActorCriticPolicy):
         p = F.normalize(p0 + 0.5 * torch.tanh(h[:, :3]), dim=-1)
 
         # pick the nearest taxel: hard in the forward pass, soft gradient backward
-        soft = torch.softmax(self.sel_sharp * (p @ self.A.T), dim=-1)
-        hard = F.one_hot(soft.argmax(-1), self.K).float()
-        anchor = (hard + soft - soft.detach()) @ self.A        # [B,3] anchor taxel direction
+        p = F.normalize(p0 + 0.5 * torch.tanh(h[:, :3]), dim=-1)
+        cosang = p @ self.S.T                                   # [B,N] spine closeness to the push point
 
-        # only spines within `reach` of the anchor extend, at full strength
-        ang = torch.acos((anchor @ self.S.T).clamp(-1 + 1e-6, 1 - 1e-6))        # [B,N]
         reach = self.reach_lo + torch.sigmoid(h[:, 3:4]) * (self.reach_hi - self.reach_lo)
         amp = self.min_amp + (1 - self.min_amp) * torch.sigmoid(h[:, 4:5])
-        ext = amp * ((reach - ang) / self.edge).clamp(0, 1)
-        ext = ext * (spd > 0.05).float()                       # zero command -> everything retracted
-        return 2 * ext - 1                                     # env maps [-1,1] -> [0, stroke]
+        edge_w = torch.cos(reach - self.edge) - torch.cos(reach)
+        within = ((cosang - torch.cos(reach)) / edge_w).clamp(0, 1)      # smooth cut-off, no acos
 
+        top = cosang.topk(self.max_active + 1, dim=-1).values
+        thr = 0.5 * (top[:, -2:-1] + top[:, -1:])                         # midway between k-th and (k+1)-th
+        near = torch.sigmoid((cosang - thr) / 0.02)                       # smooth top-k
+
+        ext = self.max_ext * amp * within * near
+        ext = ext * (spd > 0.05).float()
+        return 2 * ext - 1
     def _dist(self, mean):
         d = DiagGaussianDistribution(self.n)
         d.proba_distribution(mean, self.log_std.expand_as(mean))
@@ -108,7 +115,7 @@ class TaxelFlowPolicy(ActorCriticPolicy):
         o = self._prep(obs); f = self.trunk(o)
         mean = self._action_mean(o, f); dist = self._dist(mean)
         a = (mean if deterministic else dist.get_actions(deterministic=False)).clamp(-1, 1)
-        return a, self.value_net(f), dist.log_prob(a)
+        return a, self.value_net(self.vtrunk(o)), dist.log_prob(a)
 
     def get_distribution(self, obs):
         o = self._prep(obs)
