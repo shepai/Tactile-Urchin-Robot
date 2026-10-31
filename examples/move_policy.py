@@ -2,76 +2,68 @@ import time
 import numpy as np
 import gymnasium as gym
 import mujoco, mujoco.viewer
-from stable_baselines3 import PPO, SAC
-import sys
-from RL.policies import *
-import RL.policies as _policies
-sys.modules["policies"] = _policies  
-from tactile_urchin.envs import Urchin      # <- adjust to where your base class lives
+from stable_baselines3 import PPO
 
-CMD_SPEED = 0.3          # fixed commanded speed. Match the range the policy was trained on.
+import tactile_urchin.envs      # noqa: F401  - importing registers the env IDs
 
-# GLFW keycodes. Each key sets ONE axis, so combining two keys gives a diagonal.
-#   W / S -> forward / back  (cmd x = +1 / -1)
-#   A / D -> left / right    (cmd y = +1 / -1)
-#   X     -> stop
-KEY_W, KEY_A, KEY_S, KEY_D, KEY_X = ord("W"), ord("A"), ord("S"), ord("D"), ord("X")
+# GLFW keycodes. Each key sets ONE axis, so pressing two keys gives a diagonal.
+#   Up / Down    -> world +x / -x
+#   Left / Right -> world +y / -y
+#   Space or X   -> stop (hold still)
+KEY_RIGHT, KEY_LEFT, KEY_DOWN, KEY_UP = 262, 263, 264, 265
+KEY_SPACE, KEY_X = 32, ord("X")
 
 
 class KeyboardCommand:
-    """Latches a unit direction from key presses. Runs on the viewer thread."""
-    def __init__(self, speed):
-        self.speed = speed
-        self.axes = np.zeros(2)                  # [x, y] in {-1, 0, 1}
+    """Latches a direction from key presses. Runs on the viewer thread.
+       The viewer only reports key presses (not releases), so a direction stays
+       set until you press another key."""
+
+    def __init__(self):
+        self.axes = np.zeros(2)          # [x, y] in {-1, 0, 1}
+        self.changed = True              # apply the first command straight away
 
     def on_key(self, keycode):
         before = self.axes.copy()
-        if keycode == KEY_W:   self.axes[0] = 1
-        elif keycode == KEY_S: self.axes[0] = -1
-        elif keycode == KEY_A: self.axes[1] = 1
-        elif keycode == KEY_D: self.axes[1] = -1
-        elif keycode == KEY_X: self.axes[:] = 0
+        if keycode == KEY_UP:              self.axes[0] = 1
+        elif keycode == KEY_DOWN:          self.axes[0] = -1
+        elif keycode == KEY_LEFT:          self.axes[1] = 1
+        elif keycode == KEY_RIGHT:         self.axes[1] = -1
+        elif keycode in (KEY_SPACE, KEY_X): self.axes[:] = 0
         if not np.array_equal(before, self.axes):
-            print(f"command -> {self.vector()}")
-
-    def vector(self):
-        n = np.linalg.norm(self.axes)
-        return self.speed * self.axes / n if n > 0 else np.zeros(2)
-
-
-def apply_cmd(raw, vec):
-    """Overwrite the env's command. Assumes raw.cmd is an array whose first two
-    entries are (vx, vy); any extra entries (e.g. yaw rate) are zeroed."""
-    c = np.zeros_like(np.asarray(raw.cmd, dtype=float))
-    c[:2] = vec
-    raw.cmd = c
+            self.changed = True
+            print(f"command -> {self.axes.astype(int)}")
 
 
 def visualise(env_name, model_name):
-    env = gym.make(env_name)
+    # no time limit, and no automatic command changes: the keyboard is in charge
+    env = gym.make(env_name, max_steps=10**9, auto_cmd=False)
     raw = env.unwrapped
     model = PPO.load(f"models/{model_name}", device="auto")
-    dt = raw.frame_skip * raw.model.opt.timestep
-    obs, _ = env.reset()
+    dt = raw.policy_dt
 
-    kb = KeyboardCommand(CMD_SPEED)
-    print("Controls: W/A/S/D = move (combine for diagonals), X = stop")
+    kb = KeyboardCommand()
+    obs, _ = env.reset(options={"cmd": (0, 0)})
+    print("Controls: arrow keys = move (press two for a diagonal), Space or X = stop")
 
     with mujoco.viewer.launch_passive(raw.model, raw.data, key_callback=kb.on_key) as v:
         while v.is_running():
             with v.lock():
-                apply_cmd(raw, kb.vector())          # keyboard overrides the sampled command
+                if kb.changed:                         # only on a new command, so progress
+                    kb.changed = False                 # tracking isn't restarted every step
+                    raw.command(*kb.axes)
+                    obs = raw._get_obs()               # let the policy see it immediately
                 action, _ = model.predict(obs, deterministic=True)
                 obs, _, term, trunc, _ = env.step(action)
                 if term or trunc:
-                    obs, _ = env.reset()
+                    obs, _ = env.reset(options={"cmd": tuple(kb.axes)})
                     print("reset")
             v.sync()
             time.sleep(dt)
 
 
 ENV_NAME = "Urchin"
-MODEL_NAME = "urchin_v1"      # -> models/urchin_v2.zip
+MODEL_NAME = "urchin_v2"      # -> models/urchin_v2.zip (the old v1 model won't load into the new env)
 
 if __name__ == "__main__":
     visualise(ENV_NAME, MODEL_NAME)
