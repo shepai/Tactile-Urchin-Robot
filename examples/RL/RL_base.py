@@ -24,7 +24,7 @@ def run(env_name, model_name, log_name, total_timesteps, n_envs=8, record_video=
     A = taxel_directions(probe.model, probe.data)
     probe.close()
 
-    model = PPO(TaxelFlowPolicy, env, n_steps=512, batch_size=1024, device="cpu", verbose=1,
+    model = PPO(TaxelFlowPolicy, env, n_steps=512, batch_size=1024, device="auto", verbose=1,
                 policy_kwargs=dict(spine_directions=S, anchor_directions=A))
     model.set_logger(configure(log_dir, ["stdout", "csv"]))   # progress.csv lands in log_dir
 
@@ -50,7 +50,7 @@ def visualise(env_name, model_name, record_dir=None, video_name="visualisation.m
               model_dir="models"):
     env = gym.make(env_name)                          # no render_mode
     raw = env.unwrapped
-    model = PPO.load(os.path.join(model_dir, model_name), device="cpu")
+    model = PPO.load(os.path.join(model_dir, model_name), device="auto")
 
     dt = raw.frame_skip * raw.model.opt.timestep
     fps = max(1, round(1.0 / dt))
