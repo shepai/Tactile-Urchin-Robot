@@ -17,6 +17,8 @@ dependencies = [
     "mujoco",
     "gymnasium",
     "stable-baselines3",
+    "tqdm",
+    "rich"
 
 
 ]
